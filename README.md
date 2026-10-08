@@ -2,7 +2,7 @@
 
 # Salama: NLP-Based Gender-Based Violence Reporting and Referral System
 
-## 1. Project Overview
+## Project Overview
 
 Gender-Based Violence (GBV) remains a serious social and public health concern in Kenya. Survivors may experience physical, sexual, emotional, psychological or economic abuse, but accessing appropriate support can be difficult due to stigma, fear, privacy concerns and limited awareness of available services.
 
@@ -10,7 +10,7 @@ Gender-Based Violence (GBV) remains a serious social and public health concern i
 
 The project aims to demonstrate how machine learning can support humanitarian organisations and GBV response initiatives through more accessible, privacy-conscious reporting and referral processes.
 
-## 2. Problem Statement
+## Problem Statement
 
 GBV survivors may struggle to describe their experiences using predefined reporting categories. A single report may involve multiple forms of abuse, threats or urgent safety concerns.
 
@@ -18,7 +18,7 @@ Traditional reporting forms may not adequately capture these overlapping experie
 
 This project aims to build an NLP-based system that can interpret written reports, classify the types of violence described and provide appropriate referral guidance while prioritising survivor privacy and choice.
 
-## 3. Project Objectives
+## Project Objectives
 
 The main objectives are to:
 
@@ -29,7 +29,7 @@ The main objectives are to:
 5. Develop a referral recommendation system for relevant support services.
 6. Build an interactive application where users can submit sample reports and receive guidance.
 
-## 4. Proposed GBV Categories
+## Proposed GBV Categories
 
 The project will investigate classification into the following categories:
 
@@ -44,7 +44,7 @@ The final categories will depend on the labels available in the selected dataset
 
 Because multiple forms of abuse can occur in one report, the project will explore **multi-label classification**.
 
-## 5. Dataset
+## Dataset
 
 The project will begin by exploring **CRADLE Bench**, a dataset containing annotated narratives relating to interpersonal violence and crisis situations.
 
@@ -60,7 +60,7 @@ The dataset preparation stage will include:
 
 Only appropriately licensed or authorised data will be used. The application prototype will use fictional or safely de-identified examples rather than collecting real survivor reports.
 
-## 6. Methodology
+## Methodology
 
 ### Step 1: Data Exploration and Preprocessing
 
@@ -142,7 +142,7 @@ The application will allow users to enter fictional sample reports and view:
 - Suggested support-service categories
 - An optional simulated referral request
 
-## 7. Proposed Tools and Technologies
+## Tools and Technologies
 
 | Tool | Purpose |
 |---|---|
@@ -155,7 +155,7 @@ The application will allow users to enter fictional sample reports and view:
 | spaCy / Regex | Personal information detection |
 | Streamlit | Application development |
 
-## 8. Expected Outcome
+## Expected Outcome
 
 The expected outcome is a functional NLP prototype capable of:
 
@@ -167,7 +167,7 @@ The expected outcome is a functional NLP prototype capable of:
 
 The project will also compare baseline and transformer-based models and document their limitations, particularly when applied to sensitive real-world scenarios.
 
-## 9. Possible Future Improvements
+## Possible Future Improvements
 
 Depending on data availability and project progress, future improvements may include:
 
@@ -178,7 +178,7 @@ Depending on data availability and project progress, future improvements may inc
 - Human-reviewed referral workflows.
 - Secure deployment with appropriate safeguarding measures.
 
-## 10. Ethical Considerations
+## Ethical Considerations
 
 Because GBV reporting involves highly sensitive information, the project will prioritise privacy, consent and survivor autonomy.
 
