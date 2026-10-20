@@ -1,3 +1,63 @@
+import torch
+import re
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+# Kiswahili-to-English translation model
+TRANSLATION_MODEL_NAME = "facebook/nllb-200-distilled-600M"
+
+translation_tokenizer = None
+translation_model = None
+
+
+def translate_swahili_to_english(text):
+    global translation_tokenizer, translation_model
+
+    # Load NLLB only when translation is first requested
+    if translation_model is None:
+        translation_tokenizer = AutoTokenizer.from_pretrained(
+            TRANSLATION_MODEL_NAME,
+            src_lang="swh_Latn"
+        )
+
+        translation_model = AutoModelForSeq2SeqLM.from_pretrained(
+            TRANSLATION_MODEL_NAME
+        )
+
+        translation_model.eval()
+
+    # Split the narrative into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+
+    translations = []
+
+    for sentence in sentences:
+        if not sentence:
+            continue
+
+        inputs = translation_tokenizer(
+            sentence,
+            return_tensors="pt",
+            truncation=True
+        )
+
+        with torch.no_grad():
+            translated_tokens = translation_model.generate(
+                **inputs,
+                forced_bos_token_id=translation_tokenizer.convert_tokens_to_ids(
+                    "eng_Latn"
+                ),
+                max_length=128
+            )
+
+        english_sentence = translation_tokenizer.batch_decode(
+            translated_tokens,
+            skip_special_tokens=True
+        )[0]
+
+        translations.append(english_sentence)
+
+    return " ".join(translations)
+
 # Salama - GBV Support Recommendation Engine
 
 service_mapping = {
@@ -197,14 +257,26 @@ def salama_recommend(
     preferred_service=None,
     support_type=None,
     top_n=5,
-    predict_fn=None
+    predict_fn=None,
+    language="en"
 ):
+
+    # Process the narrative according to the selected language
+    if language == "sw":
+        processed_text = translate_swahili_to_english(text)
+
+    elif language == "en":
+        processed_text = text
+
+    else:
+        raise ValueError("Supported languages are 'en' and 'sw'.")
+    
     # The prediction function will be supplied by our ML model
     if predict_fn is None:
         raise ValueError("A GBV prediction function is required.")
 
     # Predict GBV categories from the narrative
-    predicted_categories = predict_fn(text)
+    predicted_categories = predict_fn(processed_text)
 
     print("Predicted GBV categories:", predicted_categories)
     print("County:", county if county else "Not provided")

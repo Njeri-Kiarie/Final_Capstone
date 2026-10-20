@@ -1,0 +1,406 @@
+import streamlit as st
+
+import sys
+from pathlib import Path
+
+# Allow Streamlit to import our recommendation engine
+MODELS_DIR = Path(__file__).resolve().parent / "models"
+sys.path.insert(0, str(MODELS_DIR))
+
+import recommendation_engine
+
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# Paths to our saved model and tokenizer
+MODEL_DIR = MODELS_DIR / "multilabel_model"
+TOKENIZER_DIR = MODELS_DIR / "tokenizer"
+
+
+@st.cache_resource
+def load_gbv_model():
+    tokenizer = AutoTokenizer.from_pretrained(
+        TOKENIZER_DIR,
+        local_files_only=True
+    )
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_DIR,
+        local_files_only=True
+    )
+
+    model.eval()
+
+    return tokenizer, model
+
+
+tokenizer, gbv_model = load_gbv_model()
+
+# GBV categories
+gbv_labels = [
+    "domesticviolence",
+    "rape",
+    "sexualharassment",
+    "childabuse_endangerment"
+]
+
+# Tuned classification thresholds
+thresholds = {
+    "domesticviolence": 0.50,
+    "rape": 0.25,
+    "sexualharassment": 0.40,
+    "childabuse_endangerment": 0.90
+}
+
+
+def predict_gbv(text):
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        padding=True,
+        max_length=256
+    )
+
+    with torch.no_grad():
+        outputs = gbv_model(**inputs)
+
+    probabilities = torch.sigmoid(outputs.logits)[0].tolist()
+
+    predicted_categories = [
+        label
+        for label, probability in zip(gbv_labels, probabilities)
+        if probability >= thresholds[label]
+    ]
+
+    return predicted_categories
+
+UI_TEXT = {
+    "English": {
+        "language_label": "Which language would you like to use?",
+        "location_label": "Where are you looking for support?",
+        "nairobi": "Nairobi",
+        "other_counties": "Other counties in Kenya",
+        "services_heading": "Explore support services",
+        "services_description": "Find support without describing your experience.",
+        "service_label": "What kind of support are you looking for?",
+        "select_service": "Select a service",
+        "psychosocial": "Psychosocial Support",
+        "healthcare": "Healthcare",
+        "legal": "Legal Services",
+        "shelter": "Shelter & Security",
+        "economic": "Economic Empowerment",
+        "browse_button": "Browse Support Services",
+        "narrative_heading": "Share your experience",
+        "narrative_description": "Describe what happened in your own words. You do not need to include names or personal details.",
+        "narrative_label": "Your experience",
+        "placeholder": "Describe your experience here...",
+        "find_button": "Find Support"
+    },
+
+    "Kiswahili": {
+        "language_label": "Ungependa kutumia lugha gani?",
+        "location_label": "Unatafuta msaada katika eneo gani?",
+        "nairobi": "Nairobi",
+        "other_counties": "Kaunti nyingine nchini Kenya",
+        "services_heading": "Tafuta huduma za msaada",
+        "services_description": "Unaweza kutafuta msaada bila kueleza ulichopitia.",
+        "service_label": "Unahitaji msaada wa aina gani?",
+        "select_service": "Chagua huduma",
+        "psychosocial": "Msaada wa kisaikolojia na kijamii",
+        "healthcare": "Huduma za afya",
+        "legal": "Msaada wa kisheria",
+        "shelter": "Makazi salama na ulinzi",
+        "economic": "Uwezeshaji wa kiuchumi",
+        "browse_button": "Tafuta huduma",
+        "narrative_heading": "Eleza ulichopitia",
+        "narrative_description": "Eleza kilichotokea kwa maneno yako mwenyewe. Si lazima utaje majina au taarifa zako binafsi.",
+        "narrative_label": "Ulichopitia",
+        "placeholder": "Eleza ulichopitia hapa...",
+        "find_button": "Tafuta Msaada"
+    }
+}
+
+
+# Page configuration
+st.set_page_config(
+    page_title="Salama | Find Support",
+    page_icon="🪻",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# Custom styling
+st.markdown("""<
+<style>
+    .stApp {
+        background-color: #F8F6F9;
+        color: #48404E;
+    }
+
+    .block-container {
+        max-width: 850px;
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+
+    h1, h2, h3 {
+        color: #48404E;
+    }
+
+    .salama-subtitle {
+        color: #665A6C;
+        font-size: 1.05rem;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-card {
+        background-color: #E8E1EC;
+        padding: 2rem;
+        border-radius: 18px;
+        margin-bottom: 1.5rem;
+    }
+
+    .welcome-card h2 {
+        margin-top: 0;
+        color: #48404E;
+    }
+
+    .welcome-card p {
+        color: #48404E;
+        line-height: 1.7;
+    }
+
+    .privacy-note {
+        background-color: #F0ECF2;
+        border-left: 4px solid #82718C;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        color: #48404E;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# Application header
+st.title("Salama")
+st.markdown(
+    '<p class="salama-subtitle">'
+    'GBV Support and Resource Recommendation System'
+    '</p>',
+    unsafe_allow_html=True
+)
+
+
+# Welcome section
+st.markdown("""
+<div class="welcome-card">
+    <h2>Your safety matters.</h2>
+    <p>
+        Salama provides a space to describe your experience
+        and explore support resources that may be relevant to you.
+    </p>
+    <p>
+        Share only what you feel comfortable sharing.
+        You can also explore support services without describing
+        your experience.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+
+# Privacy and safety information
+st.markdown("""
+<div class="privacy-note">
+    <strong>Before you begin</strong><br>
+    Salama provides informational referrals, not emergency
+    intervention, medical diagnosis, or professional counselling.
+    You do not need to share names or identifying details.
+</div>
+""", unsafe_allow_html=True)
+
+# Adding Language and Location selection
+st.markdown("### Find the support you need")
+
+
+# Language selection
+language = st.selectbox(
+    "Language / Lugha",
+    options=["English", "Kiswahili"],
+    index=0
+)
+
+# Select the appropriate interface translations
+t = UI_TEXT[language]
+
+# Location selection
+location_options = {
+    t["nairobi"]: "Nairobi",
+    t["other_counties"]: "Other"
+}
+
+selected_location = st.selectbox(
+    t["location_label"],
+    options=list(location_options.keys()),
+    index=0
+)
+
+# Keep the original values for the recommendation engine
+location = location_options[selected_location]
+
+st.caption(
+    "Salama currently provides Nairobi-based organisation referrals "
+    "and national support helplines for other counties."
+)
+
+st.markdown("### Explore support services")
+
+st.write(
+    "You can look for support directly without describing "
+    "your experience."
+)
+
+# Display translated service names while preserving English values
+service_options = {
+    t["select_service"]: None,
+    t["psychosocial"]: "Psychosocial Support",
+    t["healthcare"]: "Healthcare",
+    t["legal"]: "Legal Services",
+    t["shelter"]: "Shelter & Security",
+    t["economic"]: "Economic Empowerment"
+}
+
+selected_service = st.selectbox(
+    t["service_label"],
+    options=list(service_options.keys())
+)
+
+# Original English value used by the recommendation engine
+support_service = service_options[selected_service]
+
+browse_support = st.button(
+    "Browse Support Services",
+    use_container_width=True
+)
+
+if browse_support:
+    if support_service is None:
+        st.warning("Please select a support service.")
+
+    elif location != "Nairobi":
+        st.info(
+            "County-specific organisation referrals are currently "
+            "available for Nairobi only. National support contacts "
+            "will be displayed instead."
+        )
+
+        _, _, national_hotlines = (
+            recommendation_engine.load_support_resources()
+        )
+
+        st.dataframe(
+            national_hotlines[["organisation", "contact"]],
+            hide_index=True,
+            use_container_width=True
+        )
+
+    else:
+        resources = recommendation_engine.recommend_by_service(
+            service_type=support_service,
+            top_n=5
+        )
+
+        st.markdown("#### Available support resources")
+
+        for _, resource in resources.iterrows():
+            with st.container(border=True):
+                st.markdown(f"**{resource['organisation']}**")
+                st.write(f"Contact: {resource['contact']}")
+
+# Adding the narrative input
+st.markdown("### Share your experience")
+
+st.write(
+    "You can describe what happened in your own words. "
+    "You do not need to include names or personal details."
+)
+
+# Narrative input
+narrative = st.text_area(
+    "Your experience",
+    placeholder=(
+        "Describe your experience here..."
+        if language == "English"
+        else "Eleza ulichopitia hapa..."
+    ),
+    height=180,
+    max_chars=3000
+)
+
+# Submit button
+find_support = st.button(
+    "Find Support",
+    type="primary",
+    use_container_width=True
+)
+
+if find_support:
+    if not narrative.strip():
+        st.warning("Please describe your experience before continuing.")
+
+    else:
+        # Convert interface selections into model parameters
+        selected_language = "sw" if language == "Kiswahili" else "en"
+        selected_county = location
+
+        with st.spinner("Finding relevant support resources..."):
+            recommendations = recommendation_engine.salama_recommend(
+                text=narrative,
+                county=selected_county,
+                language=selected_language,
+                top_n=5,
+                predict_fn=predict_gbv
+            )
+
+        st.markdown("### Support resources")
+
+        if recommendations is not None and not recommendations.empty:
+            for _, resource in recommendations.iterrows():
+                with st.container(border=True):
+                    st.markdown(f"**{resource['organisation']}**")
+                    st.write(f"Contact: {resource['contact']}")
+
+                    if "matched_services" in resource.index:
+                        st.caption(
+                            "Services: "
+                            + ", ".join(resource["matched_services"])
+                        )
+        else:
+            st.info(
+                "No matching local resources were found. "
+                "You can still seek support through national helplines."
+            )
+
+# National support helplines
+st.divider()
+
+st.markdown("### National Support Helplines")
+
+st.write(
+    "You can access these contacts without sharing your experience."
+    
+)
+
+_, _, national_hotlines = (
+    recommendation_engine.load_support_resources()
+)
+
+for _, hotline in national_hotlines.iterrows():
+    with st.container(border=True):
+        st.markdown(f"**{hotline['organisation']}**")
+        st.write(f"Contact: {hotline['contact']}")
+
+st.caption(
+    "Helpline information is provided for reference. "
+)
