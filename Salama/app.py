@@ -95,7 +95,19 @@ UI_TEXT = {
         "narrative_description": "Describe what happened in your own words. You do not need to include names or personal details.",
         "narrative_label": "Your experience",
         "placeholder": "Describe your experience here...",
-        "find_button": "Find Support"
+        "find_button": "Find Support",
+        "select_service_warning": "Please select a support service.",
+        "empty_narrative_warning": "Please describe your experience before continuing.",
+        "searching": "Finding relevant support resources...",
+        "results_heading": "Support resources",
+        "available_resources": "Available support resources",
+        "contact": "Contact",
+        "services": "Services",
+        "no_resources": "No matching local resources were found. You can still use the national helplines below.",
+        "outside_nairobi": "County-specific organisation referrals are currently available for Nairobi only. National support contacts are shown instead.",
+        "national_heading": "National Support Helplines",
+        "national_description": "You can access these contacts without sharing your experience.",
+        "helpline_note": "Contact details and availability should be verified."
     },
 
     "Kiswahili": {
@@ -117,7 +129,19 @@ UI_TEXT = {
         "narrative_description": "Eleza kilichotokea kwa maneno yako mwenyewe. Si lazima utaje majina au taarifa zako binafsi.",
         "narrative_label": "Ulichopitia",
         "placeholder": "Eleza ulichopitia hapa...",
-        "find_button": "Tafuta Msaada"
+        "find_button": "Tafuta Msaada",
+        "select_service_warning": "Tafadhali chagua aina ya huduma.",
+        "empty_narrative_warning": "Tafadhali eleza ulichopitia kabla ya kuendelea.",
+        "searching": "Tunatafuta huduma za msaada zinazofaa...",
+        "results_heading": "Huduma za msaada",
+        "available_resources": "Huduma za msaada zinazopatikana",
+        "contact": "Mawasiliano",
+        "services": "Huduma",
+        "no_resources": "Hakuna huduma za eneo hili zilizopatikana. Bado unaweza kutumia nambari za msaada za kitaifa zilizo hapa chini.",
+        "outside_nairobi": "Kwa sasa, taarifa za mashirika kulingana na kaunti zinapatikana Nairobi pekee. Mawasiliano ya msaada ya kitaifa yanaonyeshwa badala yake.",
+        "national_heading": "Nambari za Msaada za Kitaifa",
+        "national_description": "Unaweza kupata mawasiliano haya bila kueleza ulichopitia.",
+        "helpline_note": "Tafadhali hakikisha kuwa mawasiliano haya na huduma zake bado zinapatikana."
     }
 }
 
@@ -225,10 +249,15 @@ st.markdown("### Find the support you need")
 
 
 # Language selection
+def clear_on_language_change():
+    st.session_state["salama_narrative"] = ""
+
+
 language = st.selectbox(
     "Language / Lugha",
     options=["English", "Kiswahili"],
-    index=0
+    index=0,
+    on_change=clear_on_language_change
 )
 
 # Select the appropriate interface translations
@@ -286,7 +315,7 @@ browse_support = st.button(
 
 if browse_support:
     if support_service is None:
-        st.warning("Please select a support service.")
+        st.warning(t["Please select a support service."])
 
     elif location != "Nairobi":
         st.info(
@@ -326,16 +355,22 @@ st.write(
     "You do not need to include names or personal details."
 )
 
+
+# Clear the narrative before Streamlit creates the text area
+if "salama_narrative" not in st.session_state:
+    st.session_state.salama_narrative = ""
+
+def clear_narrative():
+    st.session_state.salama_narrative = ""
+    st.session_state.clear_results = True
+
 # Narrative input
 narrative = st.text_area(
-    "Your experience",
-    placeholder=(
-        "Describe your experience here..."
-        if language == "English"
-        else "Eleza ulichopitia hapa..."
-    ),
+    t["narrative_label"],
+    placeholder=t["placeholder"],
     height=180,
-    max_chars=3000
+    max_chars=3000,
+    key="salama_narrative"
 )
 
 # Submit button
@@ -345,16 +380,28 @@ find_support = st.button(
     use_container_width=True
 )
 
+clear_label = (
+    "Clear My Input"
+    if language == "English"
+    else "Futa Nilichoandika"
+)
+
+st.button(
+    clear_label,
+    on_click=clear_narrative,
+    use_container_width=True
+)
+
 if find_support:
     if not narrative.strip():
-        st.warning("Please describe your experience before continuing.")
+        st.warning(t["empty_narrative_warning"])
 
     else:
         # Convert interface selections into model parameters
         selected_language = "sw" if language == "Kiswahili" else "en"
         selected_county = location
 
-        with st.spinner("Finding relevant support resources..."):
+        with st.spinner(t["searching"]):
             recommendations = recommendation_engine.salama_recommend(
                 text=narrative,
                 county=selected_county,
@@ -385,12 +432,9 @@ if find_support:
 # National support helplines
 st.divider()
 
-st.markdown("### National Support Helplines")
+st.markdown(f"### {t['national_heading']}")
 
-st.write(
-    "You can access these contacts without sharing your experience."
-    
-)
+st.write(t["national_description"])
 
 _, _, national_hotlines = (
     recommendation_engine.load_support_resources()
@@ -399,7 +443,7 @@ _, _, national_hotlines = (
 for _, hotline in national_hotlines.iterrows():
     with st.container(border=True):
         st.markdown(f"**{hotline['organisation']}**")
-        st.write(f"Contact: {hotline['contact']}")
+        st.write(f"{t['contact']}: {hotline['contact']}")
 
 st.caption(
     "Helpline information is provided for reference. "
