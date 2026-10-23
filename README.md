@@ -1,189 +1,382 @@
 # Final_Capstone
 
-# Salama: NLP-Based Gender-Based Violence Reporting and Referral System
+# Salama: NLP-Based Gender-Based Violence Support Recommendation System
 
 ## Project Overview
 
-Gender-Based Violence (GBV) remains a serious social and public health concern in Kenya. Survivors may experience physical, sexual, emotional, psychological or economic abuse, but accessing appropriate support can be difficult due to stigma, fear, privacy concerns and limited awareness of available services.
+Gender-Based Violence (GBV) remains a serious social and public health concern in Kenya. Individuals experiencing violence may face challenges accessing appropriate support due to stigma, fear, privacy concerns, and limited awareness of available services.
 
-**Salama** is a proposed Natural Language Processing (NLP) system designed to analyse written GBV reports, identify different forms of violence, detect potential crisis indicators and recommend appropriate support services.
+**Salama** is an NLP-based support recommendation system designed to help individuals identify relevant GBV support resources based on their experiences or preferred type of assistance.
 
-The project aims to demonstrate how machine learning can support humanitarian organisations and GBV response initiatives through more accessible, privacy-conscious reporting and referral processes.
+The system combines **multi-label text classification, Kiswahili-to-English translation, and a rule-based recommendation engine** to recommend relevant support services.
+
+Salama provides two ways of accessing support:
+
+1. **Browse Support Services:** Users can explore available support services without describing their experiences.
+2. **Share Your Experience:** Users can describe their experiences in English or Kiswahili and receive recommendations based on the types of GBV identified.
+
+The project demonstrates how machine learning and Natural Language Processing can support more accessible, privacy-conscious referral processes in the Kenyan context.
+
+---
 
 ## Problem Statement
 
-GBV survivors may struggle to describe their experiences using predefined reporting categories. A single report may involve multiple forms of abuse, threats or urgent safety concerns.
+Gender-Based Violence survivors often face difficulties identifying appropriate support services.
 
-Traditional reporting forms may not adequately capture these overlapping experiences or help users understand which services could be relevant to their situation.
+Existing support resources may be distributed across different organisations, making it challenging for individuals to determine where to seek assistance.
 
-This project aims to build an NLP-based system that can interpret written reports, classify the types of violence described and provide appropriate referral guidance while prioritising survivor privacy and choice.
+Additionally, survivors may experience multiple forms of violence simultaneously, making it difficult to identify relevant services through traditional predefined reporting categories.
+
+This project addresses these challenges by developing an NLP-based recommendation system that:
+
+- Analyses written descriptions of GBV experiences.
+- Identifies potentially relevant forms of violence.
+- Recommends appropriate categories of support services.
+- Provides information about available support organisations.
+- Allows users to access support information without disclosing personal experiences.
+
+---
 
 ## Project Objectives
 
-The main objectives are to:
+The main objectives of Salama are to:
 
-1. Develop an NLP model to classify different forms of GBV from written narratives.
-2. Identify potential crisis indicators, including threats, serious injuries and immediate safety concerns.
-3. Compare traditional machine-learning approaches with advanced transformer-based NLP models.
-4. Implement privacy protection through the detection and masking of personally identifiable information.
-5. Develop a referral recommendation system for relevant support services.
-6. Build an interactive application where users can submit sample reports and receive guidance.
+1. Develop an NLP model capable of identifying multiple forms of GBV from written narratives.
+2. Implement multi-label classification using a fine-tuned transformer model.
+3. Support English and Kiswahili narratives through multilingual processing.
+4. Develop a rule-based recommendation engine that maps identified GBV categories to relevant support services.
+5. Integrate Nairobi-based GBV support organisations and national support helplines.
+6. Build an interactive and mobile-responsive Streamlit application.
+7. Promote privacy-conscious access to support information.
 
-## Proposed GBV Categories
+---
 
-The project will investigate classification into the following categories:
+## GBV Classification Categories
 
-- **Physical violence:** Hitting, assault and other forms of physical harm.
-- **Sexual violence:** Sexual assault, coercion and other non-consensual sexual acts.
-- **Emotional and psychological abuse:** Intimidation, humiliation, manipulation and verbal abuse.
-- **Economic abuse:** Financial control, withholding resources and restricting financial independence.
-- **Threats and coercive control:** Threats, intimidation, isolation and controlling behaviour.
-- **Stalking and harassment:** Repeated unwanted contact, monitoring and harassment.
+Salama uses a multi-label classification model to identify four categories:
 
-The final categories will depend on the labels available in the selected datasets and any additional annotation work.
+| Category | Description |
+|----------|-------------|
+| Domestic Violence | Violence or abuse occurring within domestic or intimate relationships |
+| Rape | Narratives involving rape |
+| Sexual Harassment | Unwanted sexual behaviour or harassment |
+| Child Abuse and Endangerment | Narratives involving abuse or endangerment of children |
 
-Because multiple forms of abuse can occur in one report, the project will explore **multi-label classification**.
+Because multiple forms of violence can occur within one experience, the model uses **multi-label classification**.
+
+This allows a single narrative to be associated with more than one category.
+
+The absence of a predicted category does not necessarily mean that violence has not occurred.
+
+---
 
 ## Dataset
 
-The project will begin by exploring **CRADLE Bench**, a dataset containing annotated narratives relating to interpersonal violence and crisis situations.
+### 1. GBV Classification Dataset
 
-Additional GBV-related datasets may be investigated to improve category coverage and model evaluation.
+The NLP classification component uses data from **CRADLE Bench**, which contains annotated narratives relating to interpersonal violence and other sensitive experiences.
 
-The dataset preparation stage will include:
+Dataset preparation involved:
 
-- Reviewing available text and labels.
+- Exploring the dataset structure.
 - Checking missing values and duplicate records.
-- Examining class distributions.
-- Identifying overlapping categories.
-- Assessing dataset relevance and limitations.
+- Analysing class distributions.
+- Preparing the text for tokenisation.
+- Encoding target labels for multi-label classification.
+- Splitting the dataset for model training and evaluation.
 
-Only appropriately licensed or authorised data will be used. The application prototype will use fictional or safely de-identified examples rather than collecting real survivor reports.
+### 2. GBV Support Resources
+
+The recommendation system uses support-resource information compiled from a Nairobi County GBV referral directory.
+
+The resources include organisations offering:
+
+- Psychosocial Support
+- Healthcare
+- Legal Services
+- Shelter and Security
+- Economic Empowerment
+
+The application also includes national support helplines.
+
+The referral datasets are stored locally as CSV files:
+
+- `gbv_support_resources.csv`
+- `nairobi_general_support.csv`
+- `national_gbv_hotlines.csv`
+
+These datasets provide the information used by the recommendation engine.
+
+**Note:** Contact details and service availability may change and should be verified before real-world use.
+
+---
 
 ## Methodology
 
 ### Step 1: Data Exploration and Preprocessing
 
-Explore the datasets to understand their structure, labels and text characteristics.
+The first stage involved exploring the GBV classification dataset to understand its structure and characteristics.
 
-Text preprocessing may include cleaning unnecessary characters, handling missing values and preparing text for tokenisation while preserving meaningful information such as negation and threat-related expressions.
+The preprocessing process included:
 
-### Step 2: Baseline Machine-Learning Model
+- Handling missing values.
+- Removing duplicate records where appropriate.
+- Examining label distributions.
+- Preparing text for transformer tokenisation.
+- Encoding multiple target labels.
 
-Develop a baseline NLP classifier using:
+The prepared dataset was used for model development and evaluation.
+
+### Step 2: Baseline Machine Learning
+
+Traditional machine-learning approaches were explored to establish a baseline for GBV text classification.
+
+These included:
 
 - TF-IDF vectorisation
 - Logistic Regression
 
-The baseline will provide a reference for evaluating more advanced models.
+The baseline provided a reference for evaluating the transformer-based approach.
 
-### Step 3: Advanced NLP Model
+### Step 3: Advanced NLP Classification
 
-Fine-tune a pretrained transformer model such as **DistilBERT or BERT** for GBV text classification.
+A pretrained **DistilBERT** transformer model was fine-tuned for multi-label GBV classification.
 
-The transformer model will be compared against the baseline to determine whether it improves classification performance.
+The model processes written narratives and produces probabilities for the four GBV categories.
+
+A sigmoid activation function converts model outputs into independent probabilities.
+
+Category-specific classification thresholds are then applied to determine the predicted labels.
+
+This approach allows multiple GBV categories to be identified within a single narrative.
 
 ### Step 4: Model Evaluation
 
-Evaluate the classification models using:
+The classification model was evaluated using metrics appropriate for multi-label classification.
+
+These included:
 
 - Precision
 - Recall
 - F1-score
-- Confusion matrices
-- Per-category performance
+- Per-category evaluation
+- Micro- and macro-averaged metrics
 - Error analysis
 
-For multi-label classification, appropriate micro- and macro-averaged metrics will be used.
+The fine-tuned DistilBERT model achieved approximately **0.784 macro F1** on its English validation dataset.
 
-Particular attention will be given to false negatives, where relevant GBV-related information may not be detected.
+However, this performance does not establish the model's accuracy on representative Kenyan narratives or Kiswahili inputs.
 
-### Step 5: Crisis Indicator Detection
+### Step 5: Kiswahili Language Support
 
-Develop a separate component to identify potential safety concerns, such as:
+To make Salama more accessible in the Kenyan context, the application supports both English and Kiswahili.
 
-- Threats of serious harm
-- References to weapons
-- Serious injuries
-- Statements suggesting immediate danger
+For Kiswahili narratives, the system uses the **NLLB-200 distilled 600M** translation model.
 
-This component will support safety-related guidance rather than make definitive assessments of a person's level of risk.
+The translation process follows these steps:
 
-### Step 6: Privacy Protection
+1. The user enters a narrative in Kiswahili.
+2. The NLLB model translates the narrative into English.
+3. The translated text is passed to the DistilBERT classifier.
+4. The predicted categories are used by the recommendation engine.
 
-Explore NLP-based detection and masking of personally identifiable information, including names, telephone numbers and addresses.
+Both translation and classification use locally stored models.
 
-The application will be designed to minimise unnecessary data collection and avoid storing sensitive reports by default.
+Translation may alter or omit important details, and the Kiswahili pipeline requires further evaluation.
 
-### Step 7: Referral Recommendation System
+### Step 6: Support Recommendation Engine
 
-Develop a rule-based referral component that suggests relevant types of assistance based on the information identified in a report.
+Salama implements a **rule-based recommendation system**.
 
-Possible referral categories include:
+The recommendation engine maps predicted GBV categories to relevant support services.
 
-- Medical and healthcare support
-- Counselling and psychosocial support
-- Legal assistance
-- Safe shelters
-- GBV-focused NGOs
-- Emergency support services
+For example:
 
-The project will use simulated referral workflows. Any sharing of report information will require explicit user consent.
+| GBV Category | Recommended Support Services |
+|--------------|------------------------------|
+| Domestic Violence | Psychosocial Support, Shelter & Security, Healthcare, Legal Services |
+| Rape | Healthcare, Psychosocial Support, Legal Services, Shelter & Security |
+| Sexual Harassment | Psychosocial Support, Legal Services, Healthcare |
+| Child Abuse and Endangerment | Shelter & Security, Healthcare, Psychosocial Support, Legal Services |
 
-### Step 8: Application Development
+The system retrieves relevant organisations from the support-resource directory.
 
-Build an interactive prototype using **Streamlit**.
+Users can also browse organisations directly by selecting a support-service category.
 
-The application will allow users to enter fictional sample reports and view:
+This means that users are not required to describe their experiences to access support information.
 
-- Predicted GBV categories
-- Potential crisis indicators
-- Privacy-masked text
-- Suggested support-service categories
-- An optional simulated referral request
+The recommendation engine does not perform real-time verification of organisational availability or assess the urgency of an individual's situation.
+
+### Step 7: Streamlit Application Development
+
+An interactive web application was developed using **Streamlit**.
+
+The application allows users to:
+
+- Select English or Kiswahili.
+- Choose their location.
+- Browse support services without providing a narrative.
+- Describe an experience in their preferred language.
+- Receive recommendations for relevant support organisations.
+- View organisational contact information.
+- Access national GBV support helplines.
+- Clear their narrative input.
+
+---
+
+## System Architecture
+
+The Salama system follows the workflow below:
+
+### Narrative-Based Recommendation
+
+```text
+User Enters Narrative
+         |
+         v
+Language Selection
+         |
+         v
+Kiswahili-to-English Translation
+(Only for Kiswahili Input)
+         |
+         v
+DistilBERT Multi-Label Classifier
+         |
+         v
+Predicted GBV Categories
+         |
+         v
+Rule-Based Recommendation Engine
+         |
+         v
+Relevant Support Organisations
+         |
+         v
+Support Contacts Displayed
+```
+
+### Direct Support Browsing
+
+```text
+User Selects Support Service
+         |
+         v
+Rule-Based Recommendation Engine
+         |
+         v
+Support Resource Directory
+         |
+         v
+Relevant Organisations Displayed
+```
+
+---
 
 ## Tools and Technologies
 
 | Tool | Purpose |
-|---|---|
+|------|---------|
 | Python | Main programming language |
-| Pandas and NumPy | Data preparation and analysis |
+| Pandas and NumPy | Data processing and analysis |
 | Matplotlib and Seaborn | Data visualisation |
-| Scikit-learn | Baseline NLP modelling and evaluation |
-| Hugging Face Transformers | Advanced NLP modelling |
-| PyTorch | Transformer training |
-| spaCy / Regex | Personal information detection |
-| Streamlit | Application development |
+| Scikit-learn | Baseline modelling and evaluation |
+| Hugging Face Transformers | Transformer-based NLP models |
+| PyTorch | Model training and inference |
+| DistilBERT | Multi-label GBV classification |
+| NLLB-200 | Kiswahili-to-English translation |
+| Streamlit | Interactive web application |
+| CSV Files | Support-resource storage |
 
-## Expected Outcome
+---
 
-The expected outcome is a functional NLP prototype capable of:
+## Application Features
 
-1. Identifying multiple forms of GBV in written reports.
-2. Flagging potential crisis indicators.
-3. Masking selected personal information.
-4. Recommending relevant support-service categories.
-5. Demonstrating a privacy-conscious and survivor-controlled referral process.
+### 1. Bilingual Interface
 
-The project will also compare baseline and transformer-based models and document their limitations, particularly when applied to sensitive real-world scenarios.
+Salama supports English and Kiswahili, allowing users to interact with the application in their preferred language.
 
-## Possible Future Improvements
+### 2. Multi-Label GBV Classification
 
-Depending on data availability and project progress, future improvements may include:
+The system can identify multiple potentially relevant GBV categories from a single narrative.
 
-- Kiswahili language support.
-- Evaluation using Kenyan-context narratives.
-- Integration with verified local support-service directories.
-- Improved detection of coercive control and indirect threats.
-- Human-reviewed referral workflows.
-- Secure deployment with appropriate safeguarding measures.
+### 3. Personalised Support Recommendations
+
+Recommendations are generated based on the GBV categories identified in the user's narrative.
+
+### 4. Direct Support Browsing
+
+Users can access support information without describing their experiences.
+
+### 5. Location-Based Resource Availability
+
+The application currently provides Nairobi-based organisational referrals.
+
+Users in other counties can access national support helplines.
+
+### 6. National Support Contacts
+
+National GBV support helplines remain accessible regardless of classification results.
+
+### 7. Mobile-Responsive Interface
+
+The Streamlit application adapts to smaller screens, allowing users to navigate it on mobile devices.
+
+### 8. Offline Model Processing
+
+The application can run locally using downloaded models without requiring external AI inference APIs.
+
+---
 
 ## Ethical Considerations
 
-Because GBV reporting involves highly sensitive information, the project will prioritise privacy, consent and survivor autonomy.
+Because GBV experiences involve sensitive personal information, Salama is designed with privacy, safety, and user choice in mind.
 
-The system will not be presented as a replacement for trained GBV professionals or emergency responders.
+The application:
 
-Predictions may be incorrect, and the absence of a detected crisis indicator must never be interpreted as proof that a survivor is safe.
+- Allows users to browse support services without sharing a narrative.
+- Encourages users not to include names or identifying information.
+- Provides an option to clear narrative input.
+- Uses locally stored models for classification and translation.
+- Displays national support contacts independently of model predictions.
 
-All demonstrations will use fictional or appropriately de-identified data, and no real emergency notifications will be sent.
+However, Salama is an informational recommendation prototype and does not replace trained GBV professionals, medical services, or emergency responders.
+
+The current prototype does not include automated personal-information masking, validated crisis detection, or emergency intervention.
+
+Clearing a narrative from the interface does not guarantee deletion from all browser, server, or network environments.
+
+
+---
+
+## Current Limitations
+
+1. The classification model has not been validated on representative Kenyan GBV narratives.
+2. Kiswahili classification depends on machine translation quality.
+3. Organisation-specific referrals are currently limited to Nairobi.
+4. The recommendation engine uses predefined rules rather than a learned ranking model.
+5. Support-resource contact details and availability are not verified in real time.
+6. The system does not provide professional risk assessment or emergency intervention.
+
+---
+
+## Future Improvements
+
+Potential improvements include:
+
+- Expanding support-resource coverage to additional Kenyan counties.
+- Evaluating the system using appropriately governed Kenyan-context narratives.
+- Improving multilingual classification and translation.
+- Introducing more advanced recommendation techniques.
+- Integrating regularly verified support-resource directories.
+- Developing human-reviewed referral workflows.
+- Strengthening privacy and security protections.
+- Deploying the application securely for wider accessibility.
+
+---
+
+## Expected Outcome
+
+Salama demonstrates how **Natural Language Processing, multi-label classification, multilingual translation, and rule-based recommendations** can be integrated into a support-resource recommendation system.
+
+The project aims to make GBV support information more accessible by helping individuals identify potentially relevant services while maintaining the option to seek information without sharing personal experiences.
