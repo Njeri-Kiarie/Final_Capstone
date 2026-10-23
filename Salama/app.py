@@ -77,6 +77,9 @@ def predict_gbv(text):
 
 UI_TEXT = {
     "English": {
+        "welcome_heading": "Your safety matters.",
+        "welcome_description": "Salama provides a space to describe your experience and explore support resources that may be relevant to you.",
+        "welcome_note": "Share only what you feel comfortable sharing. You can also explore support services without describing your experience.",
         "language_label": "Which language would you like to use?",
         "location_label": "Where are you looking for support?",
         "nairobi": "Nairobi",
@@ -107,10 +110,16 @@ UI_TEXT = {
         "outside_nairobi": "County-specific organisation referrals are currently available for Nairobi only. National support contacts are shown instead.",
         "national_heading": "National Support Helplines",
         "national_description": "You can access these contacts without sharing your experience.",
-        "helpline_note": "Contact details and availability should be verified."
+        "helpline_note": "Contact details and availability should be verified.",
+        "find_support_heading": "Find the support you need.",
+        "safety_heading": "Before you begin",
+        "safety_description": "Salama provides informational referrals, not emergency intervention, medical diagnosis, or professional counselling. You do not need to share names or identifying details."
     },
 
     "Kiswahili": {
+        "welcome_heading": "Usalama wako ni muhimu.",
+        "welcome_description": "Salama inakupa nafasi ya kueleza ulichopitia na kutafuta huduma za msaada zinazoweza kukufaa.",
+        "welcome_note": "Eleza tu yale unayojisikia huru kushiriki. Unaweza pia kutafuta huduma za msaada bila kueleza ulichopitia.",
         "language_label": "Ungependa kutumia lugha gani?",
         "location_label": "Unatafuta msaada katika eneo gani?",
         "nairobi": "Nairobi",
@@ -141,7 +150,10 @@ UI_TEXT = {
         "outside_nairobi": "Kwa sasa, taarifa za mashirika kulingana na kaunti zinapatikana Nairobi pekee. Mawasiliano ya msaada ya kitaifa yanaonyeshwa badala yake.",
         "national_heading": "Nambari za Msaada za Kitaifa",
         "national_description": "Unaweza kupata mawasiliano haya bila kueleza ulichopitia.",
-        "helpline_note": "Tafadhali hakikisha kuwa mawasiliano haya na huduma zake bado zinapatikana."
+        "helpline_note": "Tafadhali hakikisha kuwa mawasiliano haya na huduma zake bado zinapatikana.",
+        "find_support_heading": "Pata msaada unaohitaji.",
+        "safety_heading": "Kabla ya kuanza",
+        "safety_description": "Salama hutoa taarifa kuhusu huduma za msaada, lakini si huduma ya dharura, utambuzi wa kitabibu, au ushauri wa kitaalamu. Si lazima utoe majina au taarifa zinazoweza kukutambulisha."
     }
 }
 
@@ -216,38 +228,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-# Welcome section
-st.markdown("""
-<div class="welcome-card">
-    <h2>Your safety matters.</h2>
-    <p>
-        Salama provides a space to describe your experience
-        and explore support resources that may be relevant to you.
-    </p>
-    <p>
-        Share only what you feel comfortable sharing.
-        You can also explore support services without describing
-        your experience.
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-
-# Privacy and safety information
-st.markdown("""
-<div class="privacy-note">
-    <strong>Before you begin</strong><br>
-    Salama provides informational referrals, not emergency
-    intervention, medical diagnosis, or professional counselling.
-    You do not need to share names or identifying details.
-</div>
-""", unsafe_allow_html=True)
-
-# Adding Language and Location selection
-st.markdown("### Find the support you need")
-
-
 # Language selection
 def clear_on_language_change():
     st.session_state["salama_narrative"] = ""
@@ -262,6 +242,28 @@ language = st.selectbox(
 
 # Select the appropriate interface translations
 t = UI_TEXT[language]
+
+# Welcome section
+st.markdown(f"""
+<div class="welcome-card">
+    <h2>{t['welcome_heading']}</h2>
+    <p>{t['welcome_description']}</p>
+    <p>{t['welcome_note']}</p>
+</div>
+""", unsafe_allow_html=True)
+
+
+# Privacy and safety information
+st.markdown(f"""
+<div class="privacy-note">
+    <strong>{t['safety_heading']}</strong><br>
+    {t['safety_description']}
+</div>
+""", unsafe_allow_html=True)
+
+# Adding Language and Location selection
+st.markdown(f"### {t['find_support_heading']}")
+
 
 # Location selection
 location_options = {
@@ -283,12 +285,9 @@ st.caption(
     "and national support helplines for other counties."
 )
 
-st.markdown("### Explore support services")
+st.markdown(f"### {t['services_heading']}")
 
-st.write(
-    "You can look for support directly without describing "
-    "your experience."
-)
+st.write(t["services_description"])
 
 # Display translated service names while preserving English values
 service_options = {
@@ -309,7 +308,7 @@ selected_service = st.selectbox(
 support_service = service_options[selected_service]
 
 browse_support = st.button(
-    "Browse Support Services",
+    t["browse_button"],
     use_container_width=True
 )
 
@@ -348,12 +347,9 @@ if browse_support:
                 st.write(f"Contact: {resource['contact']}")
 
 # Adding the narrative input
-st.markdown("### Share your experience")
+st.markdown(f"### {t['narrative_heading']}")
 
-st.write(
-    "You can describe what happened in your own words. "
-    "You do not need to include names or personal details."
-)
+st.write(t["narrative_description"])
 
 
 # Clear the narrative before Streamlit creates the text area
@@ -375,7 +371,7 @@ narrative = st.text_area(
 
 # Submit button
 find_support = st.button(
-    "Find Support",
+    t["find_button"],
     type="primary",
     use_container_width=True
 )
@@ -410,13 +406,13 @@ if find_support:
                 predict_fn=predict_gbv
             )
 
-        st.markdown("### Support resources")
+        st.markdown(f"### {t['results_heading']}")
 
         if recommendations is not None and not recommendations.empty:
             for _, resource in recommendations.iterrows():
                 with st.container(border=True):
                     st.markdown(f"**{resource['organisation']}**")
-                    st.write(f"Contact: {resource['contact']}")
+                    st.write(f"{t['contact']}: {resource['contact']}")
 
                     if "matched_services" in resource.index:
                         st.caption(
@@ -448,3 +444,116 @@ for _, hotline in national_hotlines.iterrows():
 st.caption(
     "Helpline information is provided for reference. "
 )
+
+st.markdown("""
+<style>
+.salama-ticker {
+    overflow: hidden;
+    background: #E8E1EC;
+    border-top: 1px solid #C6B8CE;
+    border-radius: 12px;
+    padding: 14px 0;
+    margin-top: 35px;
+}
+
+.salama-ticker-text {
+    display: inline-block;
+    white-space: nowrap;
+    color: #48404E;
+    font-size: 14px;
+    font-weight: 500;
+    animation: salama-scroll 24s linear infinite;
+}
+
+@keyframes salama-scroll {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+
+.salama-ticker:hover .salama-ticker-text {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .salama-ticker-text {
+        animation: none;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+/* Subtle Salama wallpaper */
+/* Soft warm ivory background */
+.stApp {
+    background-color: #F7F5F2;
+    background-image: none;
+}
+
+/* Mobile-friendly layout */
+@media screen and (max-width: 600px) {
+
+    .block-container {
+        max-width: 100%;
+        padding: 1.5rem 1rem 3rem;
+    }
+
+    h1 {
+        font-size: 2rem !important;
+    }
+
+    h2 {
+        font-size: 1.4rem !important;
+    }
+
+    h3 {
+        font-size: 1.15rem !important;
+    }
+
+    .welcome-card {
+        padding: 1.25rem;
+        border-radius: 14px;
+    }
+
+    .welcome-card p,
+    .privacy-note {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* Prevent long contact details from overflowing */
+    .stMarkdown,
+    .stMarkdown p {
+        overflow-wrap: anywhere;
+    }
+
+    /* Comfortable input size on mobile */
+    .stTextArea textarea,
+    .stSelectbox input {
+        font-size: 16px !important;
+    }
+
+    /* Touch-friendly buttons */
+    .stButton button {
+        min-height: 48px;
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    /* Responsive footer */
+    .salama-ticker {
+        margin-top: 1.5rem;
+        border-radius: 10px;
+    }
+}
+
+</style>
+
+<div class="salama-ticker">
+    <div class="salama-ticker-text">
+        Your safety matters &nbsp; ✦ &nbsp;
+        Support is available &nbsp; ✦ &nbsp;
+        You deserve dignity and respect &nbsp; ✦ &nbsp;
+        Salama — A safe space to find support
+    </div>
+</div>
+""", unsafe_allow_html=True)
